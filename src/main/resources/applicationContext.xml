@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/tx
+           http://www.springframework.org/schema/tx/spring-tx.xsd
+           http://www.springframework.org/schema/aop
+           http://www.springframework.org/schema/aop/spring-aop.xsd">
+    <!-- 开启注解 -->
+    <context:annotation-config/>
+    
+<!--################################################################################-->
+
+    <bean id="userService" class="com.mhw.service.impl.UserServiceImpl">
+    </bean>
+    <bean id="userinfoDao" class="com.mhw.dao.UserinfoDaoImpl">
+    </bean>
+
+<!--################################################################################-->
+
+    <!-- 整合hibernate -->
+    <!-- 配置SessionFactory -->
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+    	<!-- 加载hibernate核心配置文件 -->
+    	<property name="configLocation" value="classpath:hibernate.cfg.xml"></property>
+    </bean>
+    <!-- 配置Hibernate模板 -->
+	<bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	 
+<!--################################################################################-->	 
+	     
+    <!-- 事务管理 -->
+    <bean id="txManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+    	<property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
+    
+    <tx:advice id="txAdvice" transaction-manager="txManager">
+    	<tx:attributes>
+    		<tx:method name="add*"/>
+    		<tx:method name="find*" read-only="true"/>
+    	</tx:attributes>
+    </tx:advice>
+    
+    <aop:config>
+    	<aop:advisor advice-ref="txAdvice" pointcut-ref="pt1"/>
+    	<aop:aspect>
+    	<aop:pointcut expression="execution(* com.mhw.service.impl.*.*(..))" id="pt1"/>
+    	</aop:aspect>
+    </aop:config>
+</beans>
